@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduRec — Book Recommender</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--card:#16161f;--border:#2a2a3a;--accent:#7c3aed;--accent2:#06b6d4;--accent3:#f59e0b;--text:#e8e8f0;--muted:#6b6b85;--success:#10b981}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(124,58,237,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(124,58,237,.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:0 20px}
+header{padding:16px 0;border-bottom:1px solid var(--border);background:rgba(10,10,15,.95);backdrop-filter:blur(20px);position:sticky;top:0;z-index:100}
+.hi{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo:hover{text-decoration:none}
+.li{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px}
+.lt{font-size:19px;font-weight:800;letter-spacing:-.5px;color:var(--text)}
+.lt span{color:var(--accent2)}
+.badge{font-family:'Space Mono',monospace;font-size:10px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);color:var(--accent);padding:3px 9px;border-radius:20px}
+.ntabs{display:flex;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:3px}
+.ntab{padding:6px 16px;border-radius:7px;font-size:12px;font-weight:600;color:var(--muted);transition:all .2s;border:none;background:none;font-family:'Syne',sans-serif;text-decoration:none;display:inline-block}
+.ntab:hover{color:var(--text);text-decoration:none}
+.ntab.active{background:var(--accent);color:#fff}
+.ntab.active:hover{color:#fff}
+.hero{padding:44px 0 26px;text-align:center}
+.htag{display:inline-block;font-family:'Space Mono',monospace;font-size:10px;color:var(--accent2);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;padding:4px 12px;border:1px solid rgba(6,182,212,.3);border-radius:20px;background:rgba(6,182,212,.05)}
+.hero h1{font-size:clamp(28px,5vw,54px);font-weight:800;line-height:1.05;letter-spacing:-2px;margin-bottom:12px}
+.hl{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{color:var(--muted);font-size:15px;max-width:520px;margin:0 auto 30px;line-height:1.6}
+/* Search Panel */
+.sp{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 28px 24px;margin-bottom:24px;position:relative;overflow:hidden}
+.sp::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent)}
+.sp-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;font-family:'Space Mono',monospace}
+.sp-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end}
+input.si{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:12px 16px;color:var(--text);font-size:14px;font-family:'Syne',sans-serif;font-weight:500;outline:none;transition:border-color .2s}
+input.si::placeholder{color:var(--muted)}
+input.si:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,58,237,.1)}
+.btn{background:linear-gradient(135deg,var(--accent),#6d28d9);border:none;border-radius:9px;padding:12px 26px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s;white-space:nowrap;display:inline-flex;align-items:center;gap:8px;text-decoration:none;height:46px}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(124,58,237,.45);color:#fff}
+.sp-hint{margin-top:12px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)}
+.sp-hint span{color:var(--accent2)}
+/* Error box */
+.err-box{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.35);border-radius:11px;padding:14px 18px;margin-bottom:24px;font-family:'Space Mono',monospace;font-size:12px;color:#f87171}
+/* Suggestions */
+.sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sec-title{font-size:17px;font-weight:800;letter-spacing:-.5px;display:flex;align-items:center;gap:8px}
+.rc{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:3px 10px;border-radius:20px}
+.suggestions-list{display:flex;flex-direction:column;gap:8px;margin-bottom:36px}
+.suggestion-btn{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px 18px;color:var(--text);font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px;text-align:left}
+.suggestion-btn:hover{border-color:var(--accent);background:rgba(124,58,237,.08);transform:translateX(4px)}
+.sug-icon{font-size:16px;flex-shrink:0}
+.sug-title{flex:1;line-height:1.35}
+.sug-arrow{font-family:'Space Mono',monospace;font-size:12px;color:var(--accent);flex-shrink:0;opacity:0;transition:opacity .2s}
+.suggestion-btn:hover .sug-arrow{opacity:1}
+/* Cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px;margin-bottom:48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:13px;overflow:hidden;transition:all .25s;animation:fi .4s ease forwards;opacity:0;display:flex;flex-direction:column}
+@keyframes fi{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.card:hover{border-color:var(--accent);transform:translateY(-4px);box-shadow:0 14px 36px rgba(0,0,0,.45)}
+.card-img-wrap{position:relative;width:100%;height:220px;overflow:hidden;background:var(--surface)}
+.card-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s}
+.card:hover .card-img{transform:scale(1.05)}
+.card-img-ph{width:100%;height:220px;background:linear-gradient(135deg,var(--surface),var(--card));display:flex;align-items:center;justify-content:center;font-size:52px;color:var(--border)}
+.card-idx{position:absolute;top:10px;left:10px;width:26px;height:26px;background:rgba(10,10,15,.82);backdrop-filter:blur(6px);border:1px solid var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:var(--accent2)}
+.card-body{padding:14px;flex:1;display:flex;flex-direction:column}
+.card-title{font-size:12px;font-weight:700;line-height:1.4;margin-bottom:6px;letter-spacing:-.2px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.card-author{font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:auto;padding-top:10px;border-top:1px solid var(--border)}
+/* Empty state */
+.empty-state{text-align:center;padding:56px 20px;color:var(--muted)}
+.empty-icon{font-size:52px;margin-bottom:16px;display:block;animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.07)}}
+.empty-state h3{font-size:19px;font-weight:800;color:var(--text);margin-bottom:8px;letter-spacing:-.4px}
+.empty-state p{font-size:13px;line-height:1.8;max-width:400px;margin:0 auto}
+.empty-state strong{color:var(--accent2)}
+@media(max-width:600px){.sp-row{grid-template-columns:1fr}.btn{justify-content:center;width:100%}.grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}}
+
+/* Modal */
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:999;align-items:center;justify-content:center;padding:20px}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:18px;max-width:520px;width:100%;position:relative;overflow:hidden;animation:mup .25s ease}
+@keyframes mup{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.modal-img-wrap{width:100%;height:220px;overflow:hidden;background:var(--surface);position:relative}
+.modal-img{width:100%;height:100%;object-fit:cover;display:block}
+.modal-img-ph{width:100%;height:220px;background:linear-gradient(135deg,var(--surface),var(--card));display:flex;align-items:center;justify-content:center;font-size:64px}
+.modal-close{position:absolute;top:14px;right:14px;width:32px;height:32px;background:rgba(10,10,15,.7);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;line-height:1;font-family:monospace}
+.modal-close:hover{background:var(--surface)}
+.modal-body{padding:22px 24px 24px}
+.modal-title{font-size:17px;font-weight:800;letter-spacing:-.4px;line-height:1.3;margin-bottom:4px}
+.modal-author{font-size:11px;color:var(--accent2);font-family:'Space Mono',monospace;margin-bottom:16px}
+.modal-info{font-size:13px;color:var(--muted);line-height:1.75;min-height:60px}
+.modal-info.loading{display:flex;align-items:center;gap:10px}
+.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
+.btn-buy{flex:1;background:linear-gradient(135deg,var(--accent3),#d97706);border:none;border-radius:9px;padding:11px 20px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;text-decoration:none;text-align:center;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px}
+.btn-buy:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(245,158,11,.4);color:#fff;text-decoration:none}
+.btn-close-bottom{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:11px 18px;color:var(--muted);font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s}
+.btn-close-bottom:hover{color:var(--text);border-color:var(--accent)}
+.card{cursor:pointer}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="hi">
+      <a class="logo" href="/">
+        <div class="li">📚</div>
+        <div class="lt">Edu<span>Rec</span></div>
+      </a>
+      <span class="badge">Collaborative Filtering · Cosine Similarity</span>
+      <nav class="ntabs">
+        <a class="ntab" href="/">Top Books</a>
+        <a class="ntab active" href="/recommend">Recommender</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="hero">
+    <div class="htag">✦ Content-Based Filtering</div>
+    <h1>Find <span class="hl">Similar Books</span></h1>
+    <p>Search by keyword or partial title — the engine finds the closest matches and recommends 4 similar books.</p>
+  </div>
+
+  <!-- Search Panel -->
+  <div class="sp">
+    <div class="sp-label">Search by Keyword or Title</div>
+    <form action="/recommend_books" method="post">
+      <div class="sp-row">
+        <input
+          name="user_input"
+          type="text"
+          class="si"
+          placeholder='e.g. "thermodynamics", "machine learning", "fluid mechanics"…'
+          autocomplete="off"
+          value="{{ query if query else '' }}"
+        >
+        <button type="submit" class="btn">⚡ Search</button>
+      </div>
+      <div class="sp-hint">
+        Tip — type any <span>keyword</span> and pick the exact title from suggestions below.
+      </div>
+    </form>
+  </div>
+
+  <!-- Error -->
+  {% if error %}
+  <div class="err-box">⚠️ {{ error }}</div>
+  {% endif %}
+
+  <!-- Suggestions -->
+  {% if suggestions %}
+  <div class="sec-hd">
+    <div class="sec-title"><span>🔎</span><span>Did you mean…</span></div>
+    <div class="rc">{{ suggestions | length }} matches for "{{ query }}"</div>
+  </div>
+  <div class="suggestions-list">
+    {% for s in suggestions %}
+    <form action="/recommend_books" method="post" style="margin:0">
+      <input type="hidden" name="user_input" value="{{ s }}">
+      <button type="submit" class="suggestion-btn">
+        <span class="sug-icon">📖</span>
+        <span class="sug-title">{{ s }}</span>
+        <span class="sug-arrow">→</span>
+      </button>
+    </form>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Results -->
+  {% if data %}
+  <div class="sec-hd">
+    <div class="sec-title"><span>✨</span><span>Recommended for You</span></div>
+    <div class="rc">{{ data | length }} results</div>
+  </div>
+  <div class="grid">
+    {% for i in data %}
+    <div class="card" style="animation-delay: {{ loop.index0 * 0.1 }}s"
+         onclick="openBookModal('{{ i[1]|replace("'","\\'")|replace('"','\\"') }}', '{{ i[0]|replace("'","\\'")|replace('"','\\"') if i[0] else 'Unknown Author' }}', '{{ i[2] if i[2] else '' }}')"
+    >
+      <div class="card-img-wrap">
+        {% if i[2] %}
+          <img class="card-img" src="{{ i[2] }}" alt="{{ i[1] }}" loading="lazy"
+               onerror="this.parentElement.innerHTML='<div class=\'card-img-ph\'>📚</div>'">
+        {% else %}
+          <div class="card-img-ph">📚</div>
+        {% endif %}
+        <div class="card-idx">{{ loop.index }}</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">{{ i[1] }}</div>
+        <div class="card-author">{{ i[0] if i[0] else 'Unknown Author' }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% elif not suggestions and not error %}
+  <div class="empty-state">
+    <span class="empty-icon">🔍</span>
+    <h3>Search for any topic</h3>
+    <p>
+      Try <strong>"thermodynamics"</strong>, <strong>"machine learning"</strong>,
+      <strong>"fluid mechanics"</strong>, or <strong>"data structures"</strong>
+    </p>
+  </div>
+  {% endif %}
+
+</main>
+
+<!-- Book Info Modal -->
+<div class="modal-backdrop" id="bookModal" onclick="closeOnBackdrop(event)">
+  <div class="modal" id="modalBox">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-img-wrap" id="modalImgWrap">
+      <div class="modal-img-ph">📚</div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-author" id="modalAuthor"></div>
+      <div class="modal-info loading" id="modalInfo">
+        <div class="spinner"></div>
+        <span>Fetching book info…</span>
+      </div>
+      <div class="modal-actions">
+        <a id="modalBuyBtn" href="#" target="_blank" class="btn-buy">🛒 Buy on Amazon</a>
+        <button class="btn-close-bottom" onclick="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const cache = {};
+
+function openBookModal(title, author, img) {
+  const modal = document.getElementById('bookModal');
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalAuthor').textContent = 'by ' + author;
+
+  const imgWrap = document.getElementById('modalImgWrap');
+  imgWrap.innerHTML = img
+    ? `<img class="modal-img" src="${img}" alt="${title}" onerror="this.parentElement.innerHTML='<div class=\\'modal-img-ph\\'>📚</div>'">`
+    : '<div class="modal-img-ph">📚</div>';
+
+  const q = encodeURIComponent(title + ' ' + author);
+  document.getElementById('modalBuyBtn').href = `https://www.amazon.com/s?k=${q}`;
+
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  const infoEl = document.getElementById('modalInfo');
+  if (cache[title]) {
+    infoEl.className = 'modal-info';
+    infoEl.textContent = cache[title];
+    return;
+  }
+
+  infoEl.className = 'modal-info loading';
+  infoEl.innerHTML = '<div class="spinner"></div><span>Fetching book info…</span>';
+
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{
+        role: 'user',
+        content: `Give a brief, engaging 3-4 sentence description of the book "${title}" by ${author}. Cover what it's about, who it's for, and why it's worth reading. Be concise and informative. Do not use any markdown formatting.`
+      }]
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+    const text = data.content && data.content[0] && data.content[0].text
+      ? data.content[0].text
+      : 'No description available.';
+    cache[title] = text;
+    infoEl.className = 'modal-info';
+    infoEl.textContent = text;
+  })
+  .catch(() => {
+    infoEl.className = 'modal-info';
+    infoEl.textContent = 'Could not load book info. Please check your connection.';
+  });
+}
+
+function closeModal() {
+  document.getElementById('bookModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeOnBackdrop(e) {
+  if (e.target === document.getElementById('bookModal')) closeModal();
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>
